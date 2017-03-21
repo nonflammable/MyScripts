@@ -1,30 +1,5 @@
 #!/bin/bash
 
-echo "
-# ===============================================
-#
-# Program sprawdza temperaturę z czujnika DS18B20 bez używania dodatkowych skryptów w innych językach programowania (Python or C)
-#
-# Przykład użycia:
-#	./ds18b20.sh [ARGUMENT]
-#		Lista argumentów:
-#			* -s1 / --save_txt					- zapisuje wartość temperatury do pliku TXT
-#			* -s2 / --save_csv					- zapisuje wartość temperatury do pliku CSV
-#			* -q / --quiet						- skrypt działa, bez wyświetlania wyników temperatury
-#			* -c / --count						- wyświetla ile jest dostępnych czujników
-#			* -d [CHAR] / --delimiter_c	[CHAR]	- ustawia [CHAR] jako separator liczb dziesiętnych
-#			* -p [STRING] / --prefix [STRING]	- ustawia [STRING] jako prefix plików TXT oraz CSV
-#												  Musi zostać użyty przed -s1 oraz -s2
-#
-#
-# ===============================================
-#
-# Autor: Jarosław Zjawiński Kontakt: code@zjawinski.com.pl WWW: athro.it / zjawinski.com.pl / rainax.pl
-# Version: 1.4 (2017-03-14)
-#
-# ===============================================
-" >> /dev/null
-
 START_FOLDER=$(pwd)
 RUN_DATE=$(date +'%Y-%m-%d %H:%M:%S')
 RUN_DATE_SEC=$(date +'%s')
@@ -35,12 +10,37 @@ SAVE_TXT=0
 PRINT_OUT=1
 DELIMITER=.
 
-cd /sys/bus/w1/devices/
+show_help () {
+	echo "
+Script check temperature from all founded sensor. No more tools requied. 
 
-TYMCZASOWA_1=0
+Example of use:
+./ds18b20.sh
+
+You can use of parameters, list bellow. 
+-s1 or --save_txt	- save output to TXT file
+-s2 or --save_csv	- save output to CSV file
+-q  or --quiet		- script working, but no output visible
+-c	or --count		- script show how many DS18B20 founded
+-d [CZAR] or --delimiter_c [CHAR]	- set decimal separator to [CHAR]
+-p [STRING] or --prefix [STRING]	- set TXT and CSV prefix to [STRING]
+
+Author:
+	Jarosław Zjawiński (code@zjawinski.com.pl)
+	WWW: athro.it / zjawinski.com.pl / rainax.pl
+	
+Version:
+	v1.5 (2017-03-21)
+"
+	exit
+}
+
+# Script check serial number of DS18B20 and save to array
+cd /sys/bus/w1/devices/
+TEMPORARY_1=0
 for file in 28*; do
-	ID_DS18B20[TYMCZASOWA_1]=$file
-	TYMCZASOWA_1=$((TYMCZASOWA_1+1))
+	ID_DS18B20[TEMPORARY_1]=$file
+	TEMPORARY_1=$((TEMPORARY_1+1))
 done
 
 while [[ $# -gt 0 ]]
@@ -49,29 +49,11 @@ do
 
 	case $key in
 		-s1|--save_txt)
-		FILENAME_TXT=$START_FOLDER/$FILENAME_PREFIX$RUN_DATE_SEC.txt
-		echo -e "DATE\t\t\t${ID_DS18B20[@]}" | tr " " "\t" >> $FILENAME_TXT
 		SAVE_TXT=1
-		echo "Created TXT file: $FILENAME_TXT"
 		;;
-		
+
 		-s2|--save_csv)
-		FILENAME_CSV=$START_FOLDER/$FILENAME_PREFIX$RUN_DATE_SEC.csv
-		echo "DATE;${ID_DS18B20[@]}" | tr " " ";" >> $FILENAME_CSV
 		SAVE_CSV=1
-		echo "Created CSV file: $FILENAME_CSV"
-		;;
-		
-		-c|--count)
-		echo "Znaleziono $HOWMANYDS18B20 czujników temperatury DS18B20"
-		;;
-		
-		-h|--help)
-		;;
-		
-		-d|--delimiter)
-		DELIMITER=$2
-		echo "Set decimal separator to: $DELIMITER"
 		;;
 		
 		-p|--prefix)
@@ -79,13 +61,37 @@ do
 		echo "Set TXT and CSV prefix file to: $FILENAME_PREFIX"
 		;;
 		
+		-c|--count)
+		echo "Find $HOWMANYDS18B20 DS18B20 temperature sensor(s)."
+		;;
+		
+		-h|--help)
+		show_help
+		;;
+		
+		-d|--delimiter)
+		DELIMITER=$2
+		echo "Set decimal separator to: $DELIMITER"
+		;;
+		
 		-q|--quiet)
-		echo "Output will not present. Script working. "
 		PRINT_OUT=0
+		echo "Output will not present. Script working. "
 		;;
 	esac
 	shift
 done
+
+if [ $SAVE_TXT -eq 1 ]; then
+	FILENAME_TXT=$START_FOLDER/$FILENAME_PREFIX$RUN_DATE_SEC.txt
+	echo -e "DATE\t\t\t${ID_DS18B20[@]}" | tr " " "\t" >> $FILENAME_TXT
+	echo "Created TXT file: $FILENAME_TXT"
+fi	
+if [ $SAVE_CSV -eq 1 ]; then
+	FILENAME_CSV=$START_FOLDER/$FILENAME_PREFIX$RUN_DATE_SEC.csv
+	echo "DATE;${ID_DS18B20[@]}" | tr " " ";" >> $FILENAME_CSV
+	echo "Created CSV file: $FILENAME_CSV"
+fi
 
 while (sleep 1); do
 
