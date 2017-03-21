@@ -29,7 +29,7 @@ START_FOLDER=$(pwd)
 RUN_DATE=$(date +'%Y-%m-%d %H:%M:%S')
 RUN_DATE_SEC=$(date +'%s')
 FILENAME_PREFIX="temperature_"
-ILE_CZUJNIKOW=$(ls /sys/bus/w1/devices -l | grep 28 | wc -l)
+HOWMANYDS18B20=$(ls /sys/bus/w1/devices -l | grep 28 | wc -l)
 SAVE_CSV=0
 SAVE_TXT=0
 PRINT_OUT=1
@@ -39,7 +39,7 @@ cd /sys/bus/w1/devices/
 
 TYMCZASOWA_1=0
 for file in 28*; do
-	NAZWY_PLIKOW[TYMCZASOWA_1]=$file
+	ID_DS18B20[TYMCZASOWA_1]=$file
 	TYMCZASOWA_1=$((TYMCZASOWA_1+1))
 done
 
@@ -50,39 +50,37 @@ do
 	case $key in
 		-s1|--save_txt)
 		FILENAME_TXT=$START_FOLDER/$FILENAME_PREFIX$RUN_DATE_SEC.txt
-		echo -e "DATA\t\t\t${NAZWY_PLIKOW[@]}" | tr " " "\t" >> $FILENAME_TXT
+		echo -e "DATE\t\t\t${ID_DS18B20[@]}" | tr " " "\t" >> $FILENAME_TXT
 		SAVE_TXT=1
-		echo "Utworzono plik TXT: $FILENAME_TXT"
+		echo "Created TXT file: $FILENAME_TXT"
 		;;
 		
 		-s2|--save_csv)
 		FILENAME_CSV=$START_FOLDER/$FILENAME_PREFIX$RUN_DATE_SEC.csv
-		echo "DATA;${NAZWY_PLIKOW[@]}" | tr " " ";" >> $FILENAME_CSV
+		echo "DATE;${ID_DS18B20[@]}" | tr " " ";" >> $FILENAME_CSV
 		SAVE_CSV=1
-		echo "Utworzono plik CSV: $FILENAME_CSV"
+		echo "Created CSV file: $FILENAME_CSV"
 		;;
 		
 		-c|--count)
-		echo "Znaleziono $ILE_CZUJNIKOW czujników temperatury DS18B20"
+		echo "Znaleziono $HOWMANYDS18B20 czujników temperatury DS18B20"
+		;;
+		
+		-h|--help)
 		;;
 		
 		-d|--delimiter)
 		DELIMITER=$2
-		echo "Ustawiono separator liczb na $DELIMITER"
+		echo "Set decimal separator to: $DELIMITER"
 		;;
 		
 		-p|--prefix)
 		FILENAME_PREFIX=$2
-		echo "Ustawiono prefix plików TXT i CSV $FILENAME_PREFIX"
-		;;
-		
-		-d2|--delimiter_d)
-		DELIMITER=.
+		echo "Set TXT and CSV prefix file to: $FILENAME_PREFIX"
 		;;
 		
 		-q|--quiet)
-		echo "Nie będą prezentowane wyniki. Skrypt działa"
-		echo "                                           Prawdopodobnie."
+		echo "Output will not present. Script working. "
 		PRINT_OUT=0
 		;;
 	esac
@@ -91,7 +89,7 @@ done
 
 while (sleep 1); do
 
-	OBECNA_DATA=$(date +'%Y-%m-%d_%H:%M:%S')
+	NOWDATE=$(date +'%Y-%m-%d_%H:%M:%S')
 
 	CZUJNIK=0
 	for file in 28*; do	
@@ -101,13 +99,13 @@ while (sleep 1); do
 	done
 	
 	if [ $SAVE_TXT -eq 1 ]; then
-		echo -e "$OBECNA_DATA\t${temp[@]}" | tr " " "\t" >> $FILENAME_TXT
+		echo -e "$NOWDATE\t${temp[@]}" | tr " " "\t" >> $FILENAME_TXT
 	fi	
 	if [ $SAVE_CSV -eq 1 ]; then
-		echo "$OBECNA_DATA;${temp[@]}" | tr " " ";" >> $FILENAME_CSV
+		echo "$NOWDATE;${temp[@]}" | tr " " ";" >> $FILENAME_CSV
 	fi
 	if [ $PRINT_OUT -eq 1 ]; then
-		echo -e "$OBECNA_DATA \t ${temp[@]}"
+		echo -e "$NOWDATE \t ${temp[@]}"
 	else
 		echo -n "."
 	fi
