@@ -22,7 +22,7 @@ You can use of parameters, list bellow.
 -s2 or --save_csv	- save output to CSV file
 -q  or --quiet		- script working, but no output visible
 -c	or --count		- script show how many DS18B20 founded
--d [CZAR] or --delimiter_c [CHAR]	- set decimal separator to [CHAR]
+-d [CHAR] or --delimiter_c [CHAR]	- set decimal separator to [CHAR]
 -p [STRING] or --prefix [STRING]	- set TXT and CSV prefix to [STRING]
 
 Author:
@@ -30,7 +30,7 @@ Author:
 	WWW: athro.it / zjawinski.com.pl / rainax.pl
 	
 Version:
-	v1.5 (2017-03-21)
+	v1.6 (2017-03-21)
 "
 	exit
 }
@@ -97,11 +97,11 @@ while (sleep 1); do
 
 	NOWDATE=$(date +'%Y-%m-%d_%H:%M:%S')
 
-	CZUJNIK=0
+	SENSOR=0
 	for file in 28*; do	
-		temp[CZUJNIK]=$( cat $file/w1_slave | grep "t" | cut -d "=" -f2)
-		temp[CZUJNIK]=${temp[CZUJNIK]::-3}$DELIMITER${temp[CZUJNIK]:$((${#temp[CZUJNIK]}-3))}
-		CZUJNIK=$((CZUJNIK+1))
+		temp[SENSOR]=$( cat $file/w1_slave | grep "t" | cut -d "=" -f2)
+		temp[SENSOR]=${temp[SENSOR]::-3}$DELIMITER${temp[SENSOR]:$((${#temp[SENSOR]}-3))}
+		SENSOR=$((SENSOR+1))
 	done
 	
 	if [ $SAVE_TXT -eq 1 ]; then
