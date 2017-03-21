@@ -2,23 +2,22 @@
 
 IPDOMOTICZ='localhost'
 PORTDOMOTICZ=8080
-CZUJNIK="28-80000003f7a7"
+DS18B20="28-80000003f7a7"
 IDX=4
-CZAS=10
+WAIT=10
 
 URL="http://$IPDOMOTICZ:$PORTDOMOTICZ/json.htm?type=command&param=udevice&idx=$IDX&nvalue=0&svalue="
 
-KATALOG="/tmp/$(date +'%s')/$CZUJNIK"
-mkdir -p $KATALOG
-cd $KATALOG
+DIRECTORY="/tmp/$(date +'%s')/$DS18B20"
+mkdir -p $DIRECTORY
+cd $DIRECTORY
 
-while (sleep $CZAS); do
-	cp "/sys/bus/w1/devices/$CZUJNIK/w1_slave" "$KATALOG/czujnik"
+while (sleep $WAIT); do
+	cp "/sys/bus/w1/devices/$DS18B20/w1_slave" "$DIRECTORY/czujnik"
 		if (cat czujnik | grep "YES"); then
 			temp=$( cat czujnik | grep "t" | cut -d "=" -f2)
 			temp=${temp::-3}.${temp:$((${#temp}-3))}
 
-			echo $temp
 			curl "$URL$temp"
 		fi
 	rm -f czujnik
