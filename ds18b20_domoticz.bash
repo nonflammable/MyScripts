@@ -21,7 +21,7 @@ while (sleep $CZAS); do
 			echo $temp
 			curl "$URL$temp"
 		fi
-		rm -f czujnik
+	rm -f czujnik
 done
 
 
