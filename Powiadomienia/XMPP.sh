@@ -37,7 +37,7 @@ while sleep 1; do
                 echo '||=========================================' >> powiadomienie.txt
 
                 echo $data >> /var/log/gpio/gpio67/szafa.log
-                cat powiadomienie.txt | sendxmpp -t -u jaroslaw.zjawinski.3 -o gmail.com jaroslaw.zjawinski@gmail.com
+                cat powiadomienie.txt | sendxmpp -t -u $USERNAME -o $SERVER $PASSWORD
 		rm powiadomienie.txt
                 echo "0" > /sys/class/leds/blue_led/brightness
 
